@@ -1,0 +1,13 @@
+syntax = "proto3";
+package pb;
+
+message MsgTestRep {
+    int32  msg_type = 1;
+    string username = 2;
+    int32  age = 3;
+}
+
+message MsgTypeResq {
+    int32  msg_type = 1;
+    string content = 2;
+}

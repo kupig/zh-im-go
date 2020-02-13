@@ -3,15 +3,19 @@ package connect
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/golang/protobuf/proto"
 	"net"
+
 	//"zh-im-go/public/msg"
+	worldsvr_logic "zh-im-go/app/world_svr/logic"
+	"zh-im-go/public/config"
 	"zh-im-go/public/pb"
+
+	"github.com/golang/protobuf/proto"
 )
 
 const (
 	MsgTypeLen      = 2
-	MsgBodyLen = 2 // 消息内容长度
+	MsgBodyLen      = 2 // 消息内容长度
 	ReadConnMaxLen  = 512
 	WriteConnMaxLen = 512
 )
@@ -58,13 +62,15 @@ func (c *ConnNode) Process(connCount, svrType int) error {
 			fmt.Println(bodyLenVal)
 
 			// MsgPbContent
-			content := &pb.MsgTestRep{}
+			//content := &pb.MsgTestRep{}
 			contentBuf, err := c.buffer.GetBuffer(0, bodyLenVal)
 			if err != nil {
 				continue
 			}
-			proto.Unmarshal(contentBuf, content)
-			fmt.Println(bodyLenVal)
+			//proto.Unmarshal(contentBuf, content)
+			//fmt.Println(bodyLenVal)
+
+			DistribudtionPbMsg(1, typeVal, contentBuf)
 		}
 	}
 }
@@ -73,4 +79,18 @@ func (c *ConnNode) Release(connCount int) {
 	c.Conn.Close()
 	c.mngr.Release(c.buffer.buff)
 	fmt.Printf("[关闭] %d完全释放\n", connCount)
+}
+
+func DistribudtionPbMsg(svrType int, msgId int, pbMsg []byte) {
+	content := &pb.MsgTestRep{}
+	proto.Unmarshal(pbMsg, content)
+	//fmt.Println(bodyLenVal)
+
+	switch svrType {
+	case config.WORLD_SVR:
+		worldsvr_logic.DealWithPbMsg(pbMsg)
+	case config.CONN_SVR:
+
+	case config.LOGIC_SVR:
+	}
 }

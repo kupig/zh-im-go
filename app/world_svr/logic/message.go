@@ -1,9 +1,6 @@
 package worldsvr_logic
 
 import (
-	"fmt"
-	"github.com/golang/protobuf/proto"
-	"zh-im-go/public/pb"
 	"zh-im-go/public/msg"
 )
 
@@ -12,7 +9,7 @@ type MsgFunc func(pbMsg []byte)
 var handler map[int]MsgFunc
 
 func init() {
-	hander = make(map[int]MsgFunc)
+	handler = make(map[int]MsgFunc)
 
 	registMsgHandler(msg.CONNSVR_CONN_REQ, ConnSvrConnReq)
 }
@@ -24,8 +21,9 @@ func registMsgHandler(id int, cb MsgFunc) {
 	}
 }
 
-func dispatch(id int, msg []byte) bool{
-	if _, ok := handler[id], !ok {
+func dispatch(id int, msg []byte) bool {
+	_, ok := handler[id]
+	if !ok {
 		cbfunc := handler[id]
 		cbfunc(msg)
 
@@ -44,6 +42,6 @@ func DealWithPbMsg(id int, msg []byte) {
 	// dispatch msg
 	successed := dispatch(id, msg)
 	if !successed {
-		fmt.Println("Failed to get msg, for " + id)
+		//fmt.Println("Failed to get msg, for " + id)
 	}
 }

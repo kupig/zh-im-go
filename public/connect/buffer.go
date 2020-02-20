@@ -1,10 +1,11 @@
 package connect
 
 import (
-	"io"
 	"errors"
+	"io"
 )
 
+// read/write buffer
 type buffer struct {
 	buff  []byte
 	start int
@@ -42,4 +43,8 @@ func (b *buffer) PopBuffer(msgTypeLen, msgDatalen int) {
 		b.end -= len
 		b.start = 0
 	}
+}
+
+func (b *buffer) Write(c []byte, len int) {
+
 }

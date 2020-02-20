@@ -7,7 +7,7 @@ import (
 	//"zh-im-go/public/config"
 )
 
-var connManager = CreateConnManager(ReadConnMaxLen)
+var connManager = CreateConnManager(ReadConnMaxLen, WriteConnMaxLen)
 
 type TCPServer struct {
 	Address string
@@ -48,5 +48,3 @@ func (t *TCPServer) Start(svrType int) {
 		}
 	}
 }
-
-

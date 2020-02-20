@@ -4,9 +4,10 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
-	worldsvr_logic "zh-im-go/app/world_svr/logic"
-	worldtsvr_logic "zh-im-go/app/world_svr/logc"
+	connectsvr_logic "zh-im-go/app/connect_svr/logic"
 	logicsvr_logic "zh-im-go/app/logic_svr/logic"
+	worldsvr_logic "zh-im-go/app/world_svr/logic"
+	"zh-im-go/public/config"
 )
 
 const (
@@ -17,14 +18,25 @@ const (
 )
 
 type ConnNode struct {
-	mngr   *ConnManager
-	Conn   net.Conn
-	buffer buffer
+	mngr    *ConnManager
+	Conn    net.Conn
+	rbuffer buffer
+	wbuffer buffer
 }
 
 func (c *ConnNode) Read() (int, error) {
-	return c.buffer.PushBuffer(c.Conn)
+	return c.rbuffer.PushBuffer(c.Conn)
 }
+
+/*
+func Encode() (int, []byte) {
+
+}
+
+func Decode() {
+
+}
+*/
 
 func (c *ConnNode) Process(connCount, svrType int) error {
 	defer func() {
@@ -42,7 +54,7 @@ func (c *ConnNode) Process(connCount, svrType int) error {
 
 		if n > 0 {
 			// MsgTypeLen
-			typeLenBuf, err := c.buffer.GetBuffer(0, MsgTypeLen)
+			typeLenBuf, err := c.rbuffer.GetBuffer(0, MsgTypeLen)
 			if err != nil {
 				continue
 			}
@@ -50,7 +62,7 @@ func (c *ConnNode) Process(connCount, svrType int) error {
 			fmt.Println(typeVal)
 
 			// MsgBodyLen
-			bodyLenBuf, err := c.buffer.GetBuffer(0, MsgBodyLen)
+			bodyLenBuf, err := c.rbuffer.GetBuffer(0, MsgBodyLen)
 			if err != nil {
 				continue
 			}
@@ -58,29 +70,29 @@ func (c *ConnNode) Process(connCount, svrType int) error {
 			fmt.Println(bodyLenVal)
 
 			// MsgPbContent
-			contentBuf, err := c.buffer.GtBuffer(0, bodyLenVal)
+			contentBuf, err := c.rbuffer.GetBuffer(0, bodyLenVal)
 			if err != nil {
 				continue
 			}
 
-			DistribudtionPbMsg(1, typeVal, contentuf)
+			DistribudtionPbMsg(1, typeVal, contentBuf)
 		}
-}
+	}
 }
 
-fuc (c *ConnNode) Release(connCount int) {
-	.Conn.Close()
-c.mngr.Release(c.buffer.buff)
+func (c *ConnNode) Release(connCount int) {
+	c.Conn.Close()
+	c.mngr.Release(c.rbuffer.buff, c.wbuffer.buff)
 	fmt.Printf("[关闭] %d完全释放\n", connCount)
 }
 
-func DistribudtionPbMsg(svrType int, msId int, pbMsg []byte) {
-	witch svrType {
-case config.WORLD_SVR:
+func DistribudtionPbMsg(svrType int, msgId int, pbMsg []byte) {
+	switch svrType {
+	case config.WORLD_SVR:
 		worldsvr_logic.DealWithPbMsg(msgId, pbMsg)
-	case config.CONNSVR:
-		connectsvr_logic.DealithPbMsg(msgId, pbMsg)
+	case config.CONN_SVR:
+		connectsvr_logic.DealWithPbMsg(msgId, pbMsg)
 	case config.LOGIC_SVR:
-		logicsvr_logic.DealWthPbMsg(msgId, pbMsg)
+		logicsvr_logic.DealWithPbMsg(msgId, pbMsg)
 	}
 }

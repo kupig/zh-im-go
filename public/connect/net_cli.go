@@ -1,5 +1,11 @@
 package connect
 
+import (
+	"fmt"
+	"net"
+	"zh-im-go/public/config"
+)
+
 type TCPClient struct {
 	Address string
 }
@@ -11,11 +17,13 @@ func NewTCPClient(address string) *TCPClient {
 }
 
 func (t *TCPClient) ClientStart() {
-	/*
-		conn, err := net.Dial("tcp", config.TCPServerAdrress)
-		if err != nil {
-			fmt.Println("dial failed:", err)
-		}
-		defer conn.Close()
-	*/
+	conn, err := net.Dial("tcp", config.TCPServerAdrress)
+	if err != nil {
+		fmt.Println("dial failed:", err)
+	}
+	defer conn.Close()
+
+	for {
+		// to do
+	}
 }

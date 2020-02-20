@@ -1,10 +1,8 @@
 package msg
 
-import (
-	"zh-im-go/public/msg"
-)
+//"zh-im-go/public/msg"
 
-type MsgFunc func(msg.MsgBase)
+type MsgFunc func(MsgBase)
 
 var handler map[int]MsgFunc
 
@@ -20,5 +18,5 @@ func registMsgHandler(e int, cb MsgFunc) {
 	}
 }
 
-func FooMsgTestReq(msg.MsgBase) {
+func FooMsgTestReq(MsgBase) {
 }

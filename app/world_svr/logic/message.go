@@ -11,6 +11,7 @@ var handler map[int]MsgFunc
 func init() {
 	handler = make(map[int]MsgFunc)
 
+	registMsgHandler(msg.MSG_TEST_REQ, ConnSvrConnReq)
 	registMsgHandler(msg.CONNSVR_CONN_REQ, ConnSvrConnReq)
 }
 
@@ -22,9 +23,9 @@ func registMsgHandler(id int, cb MsgFunc) {
 }
 
 func dispatch(id int, msg []byte) bool {
-	_, ok := handler[id]
-	if !ok {
-		cbfunc := handler[id]
+	cbfunc, ok := handler[id]
+	if ok {
+		//cbfunc := handler[id]
 		cbfunc(msg)
 
 		return true

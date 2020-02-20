@@ -2,6 +2,7 @@ package connect
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"net"
 	connectsvr_logic "zh-im-go/app/connect_svr/logic"
@@ -28,15 +29,35 @@ func (c *ConnNode) Read() (int, error) {
 	return c.rbuffer.PushBuffer(c.Conn)
 }
 
-/*
-func Encode() (int, []byte) {
+func (c *ConnNode) Encode() (int, []byte, error) {
+	// MsgTypeLen
+	typeLenBuf, err := c.rbuffer.GetBuffer(0, MsgTypeLen)
+	if err != nil {
+		return 0, nil, errors.New("Failed to call GetBuffer func.")
+	}
+	typeVal := int(binary.BigEndian.Uint16(typeLenBuf))
+	fmt.Println(typeVal)
 
+	// MsgBodyLen
+	bodyLenBuf, err := c.rbuffer.GetBuffer(0, MsgBodyLen)
+	if err != nil {
+		return 0, nil, errors.New("Failed to call GetBuffer func.")
+	}
+	bodyLenVal := int(binary.BigEndian.Uint16(bodyLenBuf))
+	fmt.Println(bodyLenVal)
+
+	// MsgPbContent
+	contentBuf, err := c.rbuffer.GetBuffer(0, bodyLenVal)
+	if err != nil {
+		return 0, nil, errors.New("Failed to call GetBuffer func.")
+	}
+
+	return typeVal, contentBuf, nil
 }
 
-func Decode() {
+func (c *ConnNode) Decode() {
 
 }
-*/
 
 func (c *ConnNode) Process(connCount, svrType int) error {
 	defer func() {
@@ -53,24 +74,7 @@ func (c *ConnNode) Process(connCount, svrType int) error {
 		}
 
 		if n > 0 {
-			// MsgTypeLen
-			typeLenBuf, err := c.rbuffer.GetBuffer(0, MsgTypeLen)
-			if err != nil {
-				continue
-			}
-			typeVal := int(binary.BigEndian.Uint16(typeLenBuf))
-			fmt.Println(typeVal)
-
-			// MsgBodyLen
-			bodyLenBuf, err := c.rbuffer.GetBuffer(0, MsgBodyLen)
-			if err != nil {
-				continue
-			}
-			bodyLenVal := int(binary.BigEndian.Uint16(bodyLenBuf))
-			fmt.Println(bodyLenVal)
-
-			// MsgPbContent
-			contentBuf, err := c.rbuffer.GetBuffer(0, bodyLenVal)
+			typeVal, contentBuf, err := c.Encode()
 			if err != nil {
 				continue
 			}

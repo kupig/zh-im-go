@@ -11,9 +11,9 @@ const (
 
 // 服务器链接消息
 const (
-	//MSG_TEST_REQ = 1
-	CONNSVR_CONN_REQ  = 1
-	CONNSVR_CONN_RESP = 2
+	MSG_TEST_REQ      = 1
+	CONNSVR_CONN_REQ  = 2
+	CONNSVR_CONN_RESP = 3
 )
 
 type MsgBase interface {

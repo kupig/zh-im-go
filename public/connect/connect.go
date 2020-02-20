@@ -9,6 +9,7 @@ import (
 	logicsvr_logic "zh-im-go/app/logic_svr/logic"
 	worldsvr_logic "zh-im-go/app/world_svr/logic"
 	"zh-im-go/public/config"
+	"zh-im-go/public/msg"
 )
 
 const (
@@ -29,7 +30,9 @@ func (c *ConnNode) Read() (int, error) {
 	return c.rbuffer.PushBuffer(c.Conn)
 }
 
-func (c *ConnNode) Encode() (int, []byte, error) {
+func (c *ConnNode) Decode() (int, []byte, error) {
+	// to do 消息大小限制问题
+
 	// MsgTypeLen
 	typeLenBuf, err := c.rbuffer.GetBuffer(0, MsgTypeLen)
 	if err != nil {
@@ -55,8 +58,28 @@ func (c *ConnNode) Encode() (int, []byte, error) {
 	return typeVal, contentBuf, nil
 }
 
-func (c *ConnNode) Decode() {
+func (c *ConnNode) Encode(msgType int, bytes []byte) {
+	var buffer []byte
+	if len(bytes) <= c.mngr.WriteBufferMaxLen {
+		cache := c.mngr.WriteBuffer.Get().([]byte)
+		buffer = cache[0 : msg.MsgTypeLen+msg.MsgBodyLen+len(bytes)]
 
+		defer c.mngr.WriteBuffer.Put(cache)
+	} else {
+		// to do ...
+	}
+
+	// msg type
+	binary.BigEndian.PutUint16(buffer[0:msg.MsgTypeLen], uint16(len(bytes)))
+
+	// msg body len
+	binary.BigEndian.PutUint16(buffer[msg.MsgTypeLen:msg.MsgBodyLen], uint16(len(bytes)))
+
+	// msg content
+	out := append(buffer, bytes...)
+
+	// send msg
+	c.Conn.Write(out)
 }
 
 func (c *ConnNode) Process(connCount, svrType int) error {
@@ -74,7 +97,7 @@ func (c *ConnNode) Process(connCount, svrType int) error {
 		}
 
 		if n > 0 {
-			typeVal, contentBuf, err := c.Encode()
+			typeVal, contentBuf, err := c.Decode()
 			if err != nil {
 				continue
 			}

@@ -35,11 +35,6 @@ func dispatch(id int, msg []byte) bool {
 }
 
 func DealWithPbMsg(id int, msg []byte) {
-	// for tests
-	//content := &pb.MsgTestRep{}
-	//proto.Unmarshal(pbMsg, content)
-	//fmt.Println("world server message.")
-
 	// dispatch msg
 	successed := dispatch(id, msg)
 	if !successed {

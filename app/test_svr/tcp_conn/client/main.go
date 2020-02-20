@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/golang/protobuf/proto"
 	"log"
 	"net"
 	"time"
+	"zh-im-go/public/config"
 	MSG "zh-im-go/public/msg"
 	"zh-im-go/public/pb"
-	"zh-im-go/public/config"
+
+	"github.com/golang/protobuf/proto"
 )
 
 func send(c net.Conn) {
@@ -51,5 +52,6 @@ func main() {
 	}
 	defer conn.Close()
 	send(conn)
+
 	time.Sleep(time.Second * 10)
 }

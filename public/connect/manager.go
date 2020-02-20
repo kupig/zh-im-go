@@ -3,8 +3,6 @@ package connect
 import (
 	"net"
 	"sync"
-	//"zh-im-go/public/connec"
-	//"zh-im-go/public/connect"
 )
 
 type ConnManager struct {

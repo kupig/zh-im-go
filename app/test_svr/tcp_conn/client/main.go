@@ -54,4 +54,7 @@ func main() {
 	send(conn)
 
 	time.Sleep(time.Second * 10)
+
+	//tcpClient := connect.NewTCPClient(config.TCPServerAdrress)
+	//tcpClient.ClientStart()
 }

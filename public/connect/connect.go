@@ -82,7 +82,7 @@ func (c *ConnNode) Encode(msgType int, bytes []byte) {
 	c.Conn.Write(out)
 }
 
-func (c *ConnNode) Process(connCount, svrType int) error {
+func (c *ConnNode) SvrProcess(connCount, svrType int) error {
 	defer func() {
 		fmt.Printf("[关闭] %d TCP连接.\n", connCount)
 		c.Release(connCount)
@@ -102,9 +102,23 @@ func (c *ConnNode) Process(connCount, svrType int) error {
 				continue
 			}
 
-			DistribudtionPbMsg(1, typeVal, contentBuf)
+			DistribudtionPbMsg(svrType, typeVal, contentBuf)
 		}
 	}
+}
+
+func (c *ConnNode) CliProcess(svrType int) error {
+	n, err := c.Read()
+	if err != nil {
+		return nil
+	}
+
+	typeVal, contentBuf, err := c.Decode()
+	if err != nil {
+		return nil
+	}
+
+	DistribudtionPbMsg(svrType, typeVal, contentBuf)
 }
 
 func (c *ConnNode) Release(connCount int) {

@@ -43,7 +43,7 @@ func (t *TCPServer) Start(svrType int) {
 
 		connNode := connManager.GetConnNode(conn)
 		if connNode != nil {
-			go connNode.Process(connCount, svrType)
+			go connNode.SvrProcess(connCount, svrType)
 			connCount++
 		}
 	}

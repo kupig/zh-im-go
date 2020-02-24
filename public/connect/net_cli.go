@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"runtime"
 	"zh-im-go/public/config"
 	"zh-im-go/public/pb"
 
@@ -27,7 +28,7 @@ func (t *TCPClient) ClientStart(cliType int) {
 	if err != nil {
 		fmt.Println("dial failed:", err)
 	}
-	defer conn.Close()
+	//defer conn.Close()
 
 	connNode := cliConnManager.GetConnNode(conn)
 
@@ -49,11 +50,11 @@ func (t *TCPClient) ClientStart(cliType int) {
 	// read message
 	go func() {
 		for {
-			if connNode != nil {
-				go connNode.CliProcess(cliType)
-			}
+			connNode.CliProcess(cliType)
 		}
 	}()
 
-	//select {}
+	for {
+		runtime.Gosched()
+	}
 }

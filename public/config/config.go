@@ -2,7 +2,8 @@ package config
 
 // 服务器IP
 const (
-	TCPServerAdrress = "127.0.0.1:8899"
+	//TCPServerAdrress = "127.0.0.1:8899"
+	TCPServerAdrress = "192.168.1.105:8899"
 )
 
 // 服务器类型

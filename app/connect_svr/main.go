@@ -7,7 +7,5 @@ import (
 
 func main() {
 	tcpClient := connect.NewTCPClient(config.TCPServerAdrress)
-	tcpClient.ClientStart(config.WORLD_SVR)
-	//time.Sleep(time.Second * 10)
-	select {}
+	tcpClient.ClientStart(config.CONN_CLI)
 }

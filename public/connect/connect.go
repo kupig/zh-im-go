@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 
+	connectsvr_logic "zh-im-go/app/connect_svr/logic"
 	worldsvr_logic "zh-im-go/app/world_svr/logic"
 	"zh-im-go/public/config"
 	"zh-im-go/public/msg"
@@ -67,7 +68,7 @@ func (c *ConnNode) Encode(msgType int, bytes []byte) {
 	var buffer []byte
 	if len(bytes) <= c.mngr.WriteBufferMaxLen {
 		cache := c.mngr.WriteBuffer.Get().([]byte)
-		buffer = cache[0 : msg.MsgTypeLen+msg.MsgBodyLen+len(bytes)]
+		buffer = cache[0 : msg.MsgTypeLen+msg.MsgBodyLen]
 
 		defer c.mngr.WriteBuffer.Put(cache)
 	} else {
@@ -75,16 +76,19 @@ func (c *ConnNode) Encode(msgType int, bytes []byte) {
 	}
 
 	// msg type
-	binary.BigEndian.PutUint16(buffer[0:msg.MsgTypeLen], uint16(len(bytes)))
+	binary.BigEndian.PutUint16(buffer[0:msg.MsgTypeLen], uint16(msgType))
 
 	// msg body len
-	//binary.BigEndian.PutUint16(buffer[msg.MsgTypeLen:msg.MsgBodyLen], uint16(len(bytes)))
+	binary.BigEndian.PutUint16(buffer[msg.MsgBodyLen:], uint16(len(bytes)))
 
 	// msg content
 	out := append(buffer, bytes...)
 
 	// send msg
-	c.Conn.Write(out)
+	n, err := c.Conn.Write(out)
+	if err != nil {
+		fmt.Println(n)
+	}
 }
 
 func (c *ConnNode) SvrProcess(connCount, svrType int) error {
@@ -107,7 +111,7 @@ func (c *ConnNode) SvrProcess(connCount, svrType int) error {
 				continue
 			}
 
-			DistribudtionPbMsg(svrType, typeVal, contentBuf, c.Encode)
+			DistribudtionPbMsg(svrType, typeVal, contentBuf, nil)
 		}
 	}
 }
@@ -133,13 +137,15 @@ func (c *ConnNode) Release(connCount int) {
 	fmt.Printf("[关闭] %d完全释放\n", connCount)
 }
 
-func DistribudtionPbMsg(svrType int, msgId int, pbMsg []byte, cb func(int, []byte)) {
-	fmt.Printf("DistribudtionPbMsg, svrType:%d, msgId:%d", svrType, msgId)
-	switch svrType {
+func DistribudtionPbMsg(serviceType int, msgId int, pbMsg []byte, cb func(int, []byte)) {
+	fmt.Printf("DistribudtionPbMsg, svrType:%d, msgId:%d", serviceType, msgId)
+	switch serviceType {
 	case config.WORLD_SVR:
 		worldsvr_logic.DealWithPbMsg(msgId, pbMsg, cb)
 	case config.CONN_SVR:
 		//connectsvr_logic.DealWithPbMsg(msgId, pbMsg, c)
+	case config.CONN_CLI:
+		connectsvr_logic.DealWithPbMsg(msgId, pbMsg, cb)
 	case config.LOGIC_SVR:
 		//logicsvr_logic.DealWithPbMsg(msgId, pbMsg, c)
 	}

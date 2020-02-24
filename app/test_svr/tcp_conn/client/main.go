@@ -7,6 +7,7 @@ import (
 	"net"
 	"time"
 	"zh-im-go/public/config"
+	"zh-im-go/public/connect"
 	MSG "zh-im-go/public/msg"
 	"zh-im-go/public/pb"
 
@@ -42,19 +43,21 @@ func send(c net.Conn) {
 }
 
 func main() {
+	/*
+		buffer := make([]byte, 4)
+		binary.BigEndian.PutUint16(buffer, uint16(257))
 
-	buffer := make([]byte, 4)
-	binary.BigEndian.PutUint16(buffer, uint16(257))
+		conn, err := net.Dial("tcp", config.TCPServerAdrress)
+		if err != nil {
+			fmt.Println("dial failed:", err)
+		}
+		defer conn.Close()
+		send(conn)
 
-	conn, err := net.Dial("tcp", config.TCPServerAdrress)
-	if err != nil {
-		fmt.Println("dial failed:", err)
-	}
-	defer conn.Close()
-	send(conn)
+		time.Sleep(time.Second * 10)
+	*/
 
+	tcpClient := connect.NewTCPClient(config.TCPServerAdrress)
+	tcpClient.ClientStart(config.WORLD_SVR)
 	time.Sleep(time.Second * 10)
-
-	//tcpClient := connect.NewTCPClient(config.TCPServerAdrress)
-	//tcpClient.ClientStart()
 }

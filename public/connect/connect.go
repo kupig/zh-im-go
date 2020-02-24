@@ -5,8 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	connectsvr_logic "zh-im-go/app/connect_svr/logic"
-	logicsvr_logic "zh-im-go/app/logic_svr/logic"
+
 	worldsvr_logic "zh-im-go/app/world_svr/logic"
 	"zh-im-go/public/config"
 	"zh-im-go/public/msg"
@@ -29,6 +28,12 @@ type ConnNode struct {
 func (c *ConnNode) Read() (int, error) {
 	return c.rbuffer.PushBuffer(c.Conn)
 }
+
+/*
+func (c *ConnNode) Send(serviceType int, msg []byte) {
+	c.Encode(serviceType, msg)
+}
+*/
 
 func (c *ConnNode) Decode() (int, []byte, error) {
 	// to do 消息大小限制问题
@@ -73,7 +78,7 @@ func (c *ConnNode) Encode(msgType int, bytes []byte) {
 	binary.BigEndian.PutUint16(buffer[0:msg.MsgTypeLen], uint16(len(bytes)))
 
 	// msg body len
-	binary.BigEndian.PutUint16(buffer[msg.MsgTypeLen:msg.MsgBodyLen], uint16(len(bytes)))
+	//binary.BigEndian.PutUint16(buffer[msg.MsgTypeLen:msg.MsgBodyLen], uint16(len(bytes)))
 
 	// msg content
 	out := append(buffer, bytes...)
@@ -102,13 +107,13 @@ func (c *ConnNode) SvrProcess(connCount, svrType int) error {
 				continue
 			}
 
-			DistribudtionPbMsg(svrType, typeVal, contentBuf)
+			DistribudtionPbMsg(svrType, typeVal, contentBuf, c.Encode)
 		}
 	}
 }
 
-func (c *ConnNode) CliProcess(svrType int) error {
-	n, err := c.Read()
+func (c *ConnNode) CliProcess(cliType int) error {
+	_, err := c.Read()
 	if err != nil {
 		return nil
 	}
@@ -118,7 +123,8 @@ func (c *ConnNode) CliProcess(svrType int) error {
 		return nil
 	}
 
-	DistribudtionPbMsg(svrType, typeVal, contentBuf)
+	DistribudtionPbMsg(cliType, typeVal, contentBuf, c.Encode)
+	return nil
 }
 
 func (c *ConnNode) Release(connCount int) {
@@ -127,13 +133,14 @@ func (c *ConnNode) Release(connCount int) {
 	fmt.Printf("[关闭] %d完全释放\n", connCount)
 }
 
-func DistribudtionPbMsg(svrType int, msgId int, pbMsg []byte) {
+func DistribudtionPbMsg(svrType int, msgId int, pbMsg []byte, cb func(int, []byte)) {
+	fmt.Printf("DistribudtionPbMsg, svrType:%d, msgId:%d", svrType, msgId)
 	switch svrType {
 	case config.WORLD_SVR:
-		worldsvr_logic.DealWithPbMsg(msgId, pbMsg)
+		worldsvr_logic.DealWithPbMsg(msgId, pbMsg, cb)
 	case config.CONN_SVR:
-		connectsvr_logic.DealWithPbMsg(msgId, pbMsg)
+		//connectsvr_logic.DealWithPbMsg(msgId, pbMsg, c)
 	case config.LOGIC_SVR:
-		logicsvr_logic.DealWithPbMsg(msgId, pbMsg)
+		//logicsvr_logic.DealWithPbMsg(msgId, pbMsg, c)
 	}
 }

@@ -7,5 +7,5 @@ import (
 
 func main() {
 	tcpClient := connect.NewTCPClient(config.TCPServerAdrress)
-	tcpClient.ClientStart(config.CONN_CLI)
+	tcpClient.Start(config.CONN_CLI)
 }

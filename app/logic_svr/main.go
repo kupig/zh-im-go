@@ -8,6 +8,6 @@ import (
 
 func main() {
 	tcpClient := connect.NewTCPClient(config.TCPServerAdrress)
-	tcpClient.ClientStart(config.WORLD_SVR)
+	tcpClient.Start(config.WORLD_SVR)
 	time.Sleep(time.Second * 10)
 }

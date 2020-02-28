@@ -9,7 +9,6 @@ type MsgFunc func(pbMsg []byte)
 type SendPbMsg func(int, []byte)
 
 var handler map[int]MsgFunc
-var send SendPbMsg
 
 func init() {
 	handler = make(map[int]MsgFunc)

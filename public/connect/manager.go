@@ -1,19 +1,28 @@
 package connect
 
 import (
+	"im/public/iobuffer"
 	"net"
 	"sync"
 )
 
 type ConnManager struct {
-	ReadBufferMaxLen  int
+	//当前链接信息
+	Connect *ConnNode
+	//最大读长度
+	ReadBufferMaxLen int
+	//最大写长度
 	WriteBufferMaxLen int
-	ReadBuffer        sync.Pool
-	WriteBuffer       sync.Pool
+	//读buffer
+	ReadBuffer sync.Pool
+	//写buffer
+	WriteBuffer sync.Pool
 }
 
+// 创建链接管理器
 func CreateConnManager(rbufferMaxLen, wbufferMaxLen int) *ConnManager {
 	return &ConnManager{
+		Connect:           nil,
 		ReadBufferMaxLen:  rbufferMaxLen,
 		WriteBufferMaxLen: wbufferMaxLen,
 		ReadBuffer: sync.Pool{
@@ -32,15 +41,18 @@ func CreateConnManager(rbufferMaxLen, wbufferMaxLen int) *ConnManager {
 }
 
 func (mngr *ConnManager) GetConnNode(c net.Conn) *ConnNode {
-	return &ConnNode{
-		mngr:    mngr,
-		Conn:    c,
-		rbuffer: NewBuffer(mngr.ReadBuffer.Get().([]byte)),
-		wbuffer: NewBuffer(mngr.WriteBuffer.Get().([]byte)),
+	mngr.Connect = &ConnNode{
+		manager: mngr,
+		conn:    c,
+		rbuffer: iobuffer.NewBuffer(mngr.ReadBuffer.Get().([]byte)),
+		wbuffer: iobuffer.NewBuffer(mngr.WriteBuffer.Get().([]byte)),
 	}
+	return mngr.Connect
 }
 
-func (mngr *ConnManager) Release(rbytes, wbytes []byte) {
-	mngr.ReadBuffer.Put(rbytes[0:0])
-	mngr.WriteBuffer.Put(wbytes[0:0])
+func (mngr *ConnManager) Release() {
+	mngr.Connect.conn.Close()
+
+	mngr.ReadBuffer.Put(mngr.Connect.rbuffer)
+	mngr.WriteBuffer.Put(mngr.Connect.rbuffer)
 }
